@@ -11,6 +11,23 @@ This means you can read and write whatever you want up to the EEPROM's limit or 
 Please note that the Arduino is very limited in memory: Uno has only 2k SRAM. So trying to allocate an array of 1500+ bytes is not a good idea :) Better do it in chunks. :)
 
 
+    Copyright (C) <2015>  <Duarte Alvim>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
 ## Error Codes: 
 
     enum ReturnCode { SUCCESS, DATA_TOO_LONG, NACK_ON_ADDRESS, NACK_ON_DATA, OTHER, NO_BYTES_AVAILABLE, DEFAULT_VALUE } ;
