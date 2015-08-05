@@ -1,5 +1,5 @@
 # Atmel-AT24Cx
-Arduino Lib for Atmel AT24Cx EEPROMs
+Arduino Lib for Atmel AT24Cx EEPROMs that abstracts page alignments and Wire.h's buffer size.
 
 Wire.h has a 32 byte buffer. These EEPROMs have an inner page size.
 When writing or reading into these EEPROMs you have to have this in mind, but that makes the code less readable.
@@ -11,7 +11,7 @@ This means you can read and write whatever you want up to the EEPROM's limit or 
 Please note that the Arduino is very limited in memory: Uno has only 2k SRAM. So trying to allocate an array of 1500+ bytes is not a good idea :) Better do it in chunks. :)
 
 
-    Copyright (C) <2015>  <Duarte Alvim>
+    Copyright (C) 2015 Duarte Alvim
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
