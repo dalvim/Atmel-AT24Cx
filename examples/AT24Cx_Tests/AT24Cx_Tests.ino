@@ -21,7 +21,7 @@ class Person {
     uint8_t age ;
     char name[10];
 
-  Person(uint8_t age, char name[]) :
+  Person(const char name[], uint8_t age) :
       age(age) {
     strcpy(this->name, name);
   }
