@@ -17,18 +17,23 @@ AT24Cx eeprom = AT24Cx(ADDRESS,CAPACITY, PAGE_SIZE, WRITE_CYCLE);
 
 
 class Person {
-  public:
+public:
     uint8_t age ;
     char name[10];
 
-  Person(const char name[], uint8_t age) :
-      age(age) {
-    strcpy(this->name, name);
-  }
+    Person(const char name[], uint8_t age) :
+            age(age) {
+        strcpy(this->name, name);
+    }
 
-  String ToString() {
-    return "Name: " + String(name) + " Age: " + String(age) ;
-  }
+    Person() :
+            age(0) {
+        strcpy(this->name, "");
+    }
+
+    String ToString() {
+        return "Name: " + String(name) + " Age: " + String(age) ;
+    }
 };
 
 void setup() {
@@ -144,8 +149,8 @@ void LimitTests() {
 void WriteObject() {
   Serial.println("WriteObject(): Writes two objects. The first one across two pages");
 
-  Person p1 = Person(101, "John Doe");
-  Person p2 = Person(99, "Jane Doe");
+  Person p1 = Person("John Doe", 30);
+  Person p2 = Person("Jane Doe", 28);
 
   uint16_t startingAddress = eeprom.PageSize() - sizeof(Person) / 2 ;
   Serial.println("Page Size: " + String(eeprom.PageSize()) + " StartingAddress: " + String(startingAddress) + " sizeof(Person): " + String(sizeof(Person)));
@@ -155,7 +160,7 @@ void WriteObject() {
   eeprom.Write(startingAddress, p1);
   eeprom.Write(startingAddress + sizeof(Person), p2);
 
-  Person readPerson = Person(0, "");
+  Person readPerson;
 
   eeprom.Read(startingAddress, readPerson);
   Serial.println(readPerson.ToString());
