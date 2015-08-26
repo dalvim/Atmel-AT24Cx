@@ -8,19 +8,17 @@ Copiado de um forum e adaptada para as minhas convencoes. :p
 
 #include <Arduino.h>
 
-#include <MemoryFree.h> // debug...
-
 class AT24Cx {
 	public:
 
 		// uint8_t _pageSize; // no need. It's always >= WIRE_BUFFER_SIZE...
-		
+
 		const static uint8_t WIRE_BUFFER_SIZE = 32 ; // dunno why this isn't documented or even defined...
 
 		enum ReturnCode { SUCCESS, DATA_TOO_LONG, NACK_ON_ADDRESS, NACK_ON_DATA, OTHER, NO_BYTES_AVAILABLE, DEFAULT_VALUE } ;
-		
-		// CONSTRUCTOR(S) 
-		
+
+		// CONSTRUCTOR(S)
+
 		/**
 		* AT24Cx - Creates a new instance of an AT24Cx
 		*
@@ -31,7 +29,7 @@ class AT24Cx {
 		*	pageSize: The size of the memory pages in the EEPROM.
 		*/
 		AT24Cx(uint8_t deviceAddress, uint16_t capacity, uint8_t pageSize, uint8_t writeCycle);
-				
+
 		// SELECTORS
 
 		/**
@@ -42,7 +40,7 @@ class AT24Cx {
 		* If startingAddress + length > Capacity(), it wraps to the begginning.
 		*/
 		ReturnCode Read(uint16_t startingAddress, void* data, uint16_t length) const ;
-	
+
 
 		/**
 		* Read - Reads data from EEPROM and fills it into 'data'
@@ -52,11 +50,11 @@ class AT24Cx {
 		template <typename T> ReturnCode Read(uint16_t startingAddress, T& data) const {
 			return Read(startingAddress, (void*) &data, sizeof(data));
 		}
-	
+
 		/**
-		* Poll - Acknowledge polling: Tests if responds with zero (internal write cycle has ended) 
-		* 
-		* In case of a NACK (still writing) it continues polling up to _MAX_POLL_ATTEMPTS 
+		* Poll - Acknowledge polling: Tests if responds with zero (internal write cycle has ended)
+		*
+		* In case of a NACK (still writing) it continues polling up to _MAX_POLL_ATTEMPTS
 		*/
 		ReturnCode Poll(uint16_t memoryAddress) const ;
 
@@ -64,12 +62,12 @@ class AT24Cx {
 		* Returns the capacity of this EEPROM
 		*/
 		uint16_t Capacity() const ;
-		
+
 		uint8_t PageSize() const ;
-		
-		
+
+
 		/**
-		* Prints the contents of the eeprom into 'Serial' _pageSize bytes per line. 
+		* Prints the contents of the eeprom into 'Serial' _pageSize bytes per line.
 		* This methods substitutes ToString() since the Arduino probably does not have enough memory
 		* to create a string the size of the EEPROM.
 		*
@@ -85,20 +83,20 @@ class AT24Cx {
 		* It overlaps to the begginning of the EEPROM.
 		*/
 		ReturnCode Write(uint16_t startingAddress, const void* data, uint16_t length) const ;
-		
-		
+
+
 		/**
 		* Writes 'data' into the EEPROM.
 		*/
 		template <typename T> ReturnCode Write(uint16_t startingAddress, const T& data) const {
 			return Write(startingAddress, (const void*) &data, sizeof(data));
 		}
-		
+
 		/**
 		* Fills the EEPROM with 'byte', starting at 'startAddress' and writing 'length' bytes.
 		*/
 		ReturnCode Fill(uint8_t byte, uint16_t startingAddress, uint16_t length) const ;
-		
+
 		/**
 		* Fills the EEPROM with 'byte', starting at position 0 and writing 'length' bytes.
 		*/
@@ -106,31 +104,31 @@ class AT24Cx {
 
 		/**
 		* Fills the whole EEPROM with 'byte'.
-		*/		
+		*/
 		ReturnCode Fill(uint8_t byte) const ;
 
 		/**
 		* Zeroes EEPROM with '0', starting at 'startAddress' and writing 'length' bytes.
-		*/		
+		*/
 		ReturnCode Clear(uint16_t startingAddress, uint16_t length) const ;
-		
+
 		/**
 		* Zeroes the EEPROM, starting at position 0 and writing 'length' bytes.
 		*/
 		ReturnCode Clear(uint16_t length) const ;
-		
+
 		/**
 		* Zeroes the whole EEPROM.
 		*/
-		ReturnCode Clear() const; 
-		
-			
+		ReturnCode Clear() const;
+
+
 	private:
 		uint8_t _deviceAddress;
 		uint16_t _capacity;
 		uint8_t _writeCycle;
 		uint8_t _pageSize;
-		
+
 		static const uint8_t _MAX_POLL_ATTEMPTS = 10;
 };
 
