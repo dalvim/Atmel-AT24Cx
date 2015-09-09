@@ -68,7 +68,6 @@ AT24Cx::ReturnCode AT24Cx::Poll(uint16_t memoryAddress) const {
 }
 
 
-
 uint16_t AT24Cx::Capacity() const  {
 	return _capacity;
 }
@@ -77,12 +76,10 @@ uint8_t AT24Cx::PageSize() const  {
 	return _pageSize;
 }
 
-// MODIFIERS
-
 AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, const char* info, uint8_t chunkSize) const {
 	AT24Cx::ReturnCode rt = DEFAULT_VALUE;
 	uint16_t currentAddress = startingAddress;
-	uint8_t _chunkSize = !chunkSize ? _pageSize : chunkSize ; 
+	uint8_t _chunkSize = !chunkSize ? _pageSize : chunkSize ;
 
 	uint16_t remainingBytes = length;
 	uint16_t bytesToRead = min(remainingBytes, _chunkSize);
@@ -108,6 +105,9 @@ AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, cons
 	}
 	return rt;
 }
+
+// MODIFIERS
+
 
 /**
 * Wire.h buffer is 32. With the memory address bytes we can only write 30 bytes at a time.
