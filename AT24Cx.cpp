@@ -79,12 +79,13 @@ uint8_t AT24Cx::PageSize() const  {
 
 // MODIFIERS
 
-AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, const char* info) const {
+AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, const char* info, uint8_t chunkSize) const {
 	AT24Cx::ReturnCode rt = DEFAULT_VALUE;
 	uint16_t currentAddress = startingAddress;
+	uint8_t _chunkSize = !chunkSize ? _pageSize : chunkSize ; 
 
 	uint16_t remainingBytes = length;
-	uint16_t bytesToRead = min(remainingBytes, _pageSize);
+	uint16_t bytesToRead = min(remainingBytes, _chunkSize);
 	uint8_t data[bytesToRead];
 
 	if (info != 0) {
@@ -102,7 +103,7 @@ AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, cons
 
 		currentAddress += bytesToRead;
 		remainingBytes -= bytesToRead;
-		bytesToRead = min(remainingBytes, _pageSize);
+		bytesToRead = min(remainingBytes, _chunkSize);
 
 	}
 	return rt;

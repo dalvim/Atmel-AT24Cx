@@ -67,13 +67,15 @@ class AT24Cx {
 
 
 		/**
-		* Prints the contents of the eeprom into 'Serial' _pageSize bytes per line.
-		* This methods substitutes ToString() since the Arduino probably does not have enough memory
+		* Prints the contents of the eeprom into 'Serial' chunkSize bytes per line. (if chunkSize == 0)
+		* it uses _pageSize as size.
+		* This methods substitutes ToString() since the Arduino does not have enough memory
 		* to create a string the size of the EEPROM.
 		*
 		* info is text you may want to show before showing the EEPROM's contents.
 		*/
-		ReturnCode Print(uint16_t startingAddress, uint16_t length, const char* info = 0) const ;
+		ReturnCode Print(uint16_t startingAddress, uint16_t length, const char* info = 0, uint8_t chunkSize = 0) const ;
+
 
 		// MODIFIERS
 
