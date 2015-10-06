@@ -119,7 +119,9 @@ AT24Cx::ReturnCode AT24Cx::Write(uint16_t startingAddress, const void* data, uin
 	uint8_t bytesToWrite = 0;
 	ReturnCode rt = DEFAULT_VALUE;
 
-	while (currentAddress < startingAddress + length) {
+	uint16_t endingAddress = min(startingAddress + length, Capacity());
+
+	while (currentAddress < endingAddress) {
 		Wire.beginTransmission(_deviceAddress);
 		Wire.write((uint8_t)(currentAddress >> 8));   // high order byte
 		Wire.write((uint8_t)(currentAddress & 0xFF)); // low order byte

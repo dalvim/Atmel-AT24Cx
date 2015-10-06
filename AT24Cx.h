@@ -59,7 +59,7 @@ class AT24Cx {
 		ReturnCode Poll(uint16_t memoryAddress) const ;
 
 		/**
-		* Returns the capacity of this EEPROM
+		* Returns the capacity of this EEPROM capacity in uint8_ts. (i.e. 32Kbit = 4096 uint8_ts)
 		*/
 		uint16_t Capacity() const ;
 

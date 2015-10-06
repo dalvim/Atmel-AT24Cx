@@ -48,8 +48,19 @@ void setup() {
   //FillWithNumbers();
   //WriteMoreThanOnePage() ;
   //WriteAStringBetweenPages() ;
-  //LimitTests();
-  WriteObject();
+
+
+  /**
+  * Writes bytes overflowing the EEPROM's capacity.
+  * By factory default data would be continue to be written
+  * wraping at the beginning. Instead, this lib truncates data.
+  *
+  * Means overflows are truncated and ignored.
+  */
+  WriteOverflow();
+  
+  
+  //WriteObject();
 
 }
 
@@ -120,29 +131,31 @@ void WriteAStringBetweenPages() {
 }
 
 
-void LimitTests() {
-  Serial.println("LimitTests()") ;
+void WriteOverflow() {
+  Serial.println("WriteOverflow()") ;
 
-  Serial.println("Writing on the edge... ");
+  // fill an array of bytes
   uint8_t dataSize = 20;
   uint8_t data[dataSize] ;
-  int startingAddress = (eeprom.Capacity() / eeprom.PageSize() - 2) * eeprom.PageSize();
-
   for (int i = 0; i < dataSize; i++) {
     data[i] = i;
   }
 
+  // lastTwoPagesAddress starts 2 pages before Capacity().
+  uint16_t lastTwoPagesAddress = (eeprom.Capacity() / eeprom.PageSize() - 2) * eeprom.PageSize();
 
-  eeprom.Clear(0, eeprom.PageSize()); // ckear first page.
-  eeprom.Clear(startingAddress-5, eeprom.Capacity() - startingAddress); // clear last two pages
+  eeprom.Clear(0, eeprom.PageSize()); // clear first page.
+  eeprom.Clear(lastTwoPagesAddress, eeprom.Capacity() - lastTwoPagesAddress); // clear last two pages
 
+  uint16_t startingAddress = eeprom.Capacity() - dataSize/2 ; // will overflow by half the data...
 
-  AT24Cx::ReturnCode rt = eeprom.Write(eeprom.Capacity() - dataSize/2, data, dataSize);
-  Serial.println("Return Code: " + rt);
+  Serial.println("We'll write " + String(dataSize) + " bytes at position: " + String(startingAddress) + ". According to specs it would wrap to the first page. This lib truncates ;).");
+
+  AT24Cx::ReturnCode rt = eeprom.Write(startingAddress, data, dataSize);
+  Serial.println("Return Code: " + String(rt) + " ... zero means success ;)");
 
   eeprom.Print(0, eeprom.PageSize(), "First page:");
-  eeprom.Print(startingAddress, eeprom.Capacity() - startingAddress, "Last two pages:");
-
+  eeprom.Print(lastTwoPagesAddress, eeprom.Capacity() - lastTwoPagesAddress, "Last two pages:");
 }
 
 
