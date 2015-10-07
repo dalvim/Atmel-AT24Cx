@@ -68,6 +68,62 @@ AT24Cx::ReturnCode AT24Cx::Poll(uint16_t memoryAddress) const {
 }
 
 
+/**
+* Equals - Checks for equality between data and data written in eeprom up to repetition times from startingAddress.
+*/
+boolean AT24Cx::Equals(uint16_t startingAddress, const void* data, uint16_t dataLength, uint16_t repetitions) const {
+	AT24Cx::ReturnCode rt = DEFAULT_VALUE;
+	uint16_t currentAddress = startingAddress;
+	uint16_t chunkSize = _ChunkSize(dataLength, repetitions);
+	uint8_t chunk[chunkSize];
+	uint16_t remainingBytes = dataLength * repetitions;
+	uint16_t bytesToRead = chunkSize;
+	const uint8_t *byteData = (const uint8_t *) data; // access data byte by byte
+
+	while (remainingBytes > 0) {
+		rt = Read(currentAddress, chunk, bytesToRead);
+		if (rt != SUCCESS) {
+			return false;
+		}
+
+		for (uint16_t i = 0; i < bytesToRead;) {
+			for (uint16_t j = 0; j < dataLength; j++, i++) {
+				if (chunk[i] != byteData[j]) {
+					return false;
+				}
+			}
+		}
+		currentAddress += bytesToRead;
+		remainingBytes -= bytesToRead;
+		bytesToRead = min(remainingBytes, chunkSize);
+	}
+
+	return true;
+}
+
+/**
+* Returns the chunk size to test for equality in Equals.
+*
+* The purpose is to limit memory use. We try to read as close to _pageSize as possible.
+*
+* If dataLength > _pageSize we use it as chunkSize, although care must be taken so as not
+* to overflow free ram.
+*
+* If _pageSize < dataLength * repetitions then chunkSize = largest number of dataBlocks that fit in page
+*/
+uint16_t AT24Cx::_ChunkSize(uint16_t dataLength, uint16_t repetitions) const {
+	if (dataLength > _pageSize) { // careful with microcontroler's memory limitations.
+		return dataLength;
+	}
+
+	if (_pageSize < dataLength * repetitions) {
+		return min(_pageSize / dataLength, repetitions) * dataLength; // largest number of dataBlocks that fit in page.
+	}
+
+	return dataLength * repetitions;
+}
+
+
 uint16_t AT24Cx::Capacity() const  {
 	return _capacity;
 }
@@ -113,7 +169,20 @@ AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, cons
 * Wire.h buffer is 32. With the memory address bytes we can only write 30 bytes at a time.
 * Writes in the EEPROM wrap at the end of _pageSize. So we need to keep things aligned.
 */
+
+
+
 AT24Cx::ReturnCode AT24Cx::Write(uint16_t startingAddress, const void* data, uint16_t length) const  {
+	if (Equals(startingAddress, data, length)) {
+		//Serial.println("AT24Cx::Write() - Data's the same. Nothing to write ;)"); // DEBUG - Uncoment this one for the EqualsExample()
+		return SUCCESS;
+	}
+
+	return ForceWrite(startingAddress, data, length);
+}
+
+
+AT24Cx::ReturnCode AT24Cx::ForceWrite(uint16_t startingAddress, const void* data, uint16_t length) const  {
 	uint8_t *byteData = (uint8_t *) data; // byte by byte
 	uint16_t currentAddress = startingAddress ;
 	uint8_t bytesToWrite = 0;
@@ -150,24 +219,25 @@ AT24Cx::ReturnCode AT24Cx::Write(uint16_t startingAddress, const void* data, uin
 }
 
 
+
 /**
 * Fill() - Fills length bytes with byteValue starting in startingAddress.
 *
 */
-AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byteValue, uint16_t startingAddress, uint16_t length) const {
+AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byteValue, uint16_t startingAddress, uint16_t length, boolean force) const {
 	AT24Cx::ReturnCode rt = DEFAULT_VALUE;
 	uint16_t currentAddress = startingAddress;
 
 	uint16_t remainingBytes = length;
 	uint16_t chunkSize = min(remainingBytes, _pageSize);
-	uint8_t data[chunkSize] ;
+	uint8_t chunk[chunkSize] ;
 
 	for (uint16_t i = 0; i < chunkSize; i++) {
-		data[i] = byteValue;
+		chunk[i] = byteValue;
 	}
 
 	while (remainingBytes > 0) {
-		rt = Write(currentAddress, data, chunkSize);
+		rt = Write(currentAddress, chunk, chunkSize);
 
 		if (rt != SUCCESS) {
 			break;
@@ -179,23 +249,15 @@ AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byteValue, uint16_t startingAddress, uin
 	return rt;
 }
 
-AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byte, uint16_t length) const {
-	return Fill(byte, 0, length);
+
+AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byte, boolean force) const {
+	return Fill(byte, _capacity, force);
 }
 
-AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byte) const {
-	return Fill(byte, _capacity);
+AT24Cx::ReturnCode AT24Cx::Clear(uint16_t startingAddress, uint16_t length, boolean force) const {
+	return Fill(0, startingAddress, length, force);
 }
 
-AT24Cx::ReturnCode AT24Cx::Clear(uint16_t startingAddress, uint16_t length) const {
-	return Fill(0, startingAddress, length);
-}
-
-
-AT24Cx::ReturnCode AT24Cx::Clear(uint16_t length) const {
-	return Clear(0, length);
-}
-
-AT24Cx::ReturnCode AT24Cx::Clear() const {
-	return Clear(0, _capacity);
+AT24Cx::ReturnCode AT24Cx::Clear(boolean force) const {
+	return Clear(0, _capacity, force);
 }

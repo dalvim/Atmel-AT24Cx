@@ -58,11 +58,39 @@ class AT24Cx {
 		*/
 		ReturnCode Poll(uint16_t memoryAddress) const ;
 
+
+		/**
+		* Equals - Checks for equality between data and data written in eeprom up to repetition times from startingAddress.
+		* Because of memory constraints, when data blocks are repeated patterns instead of allocating all data
+		* possibly overflowing memory, we can repeat the check for each block.
+		* The simplest case is when we want to check if the eeprom is cleared: filled with zeroes
+		*
+		* Examples:
+		* Check if it's cleared from byte 100 to 150:
+		*    Equals(100, 0, 150);
+		*
+		* Check if there are 3 sequential blocks of data at address 150:
+		*    Equals(150, data, 3);
+		*
+		* startingAddress - From where to verify equality
+		* data            - a block of data to test for inequality
+		* repetitions     - how many sequencial times will test the data block
+		*/
+		boolean Equals(uint16_t startingAddress, const void* data, uint16_t dataLength, uint16_t repetitions = 1) const ;
+
+		template <typename T> boolean Equals(uint16_t startingAddress, T& data, uint16_t repetitions = 1) const {
+			return Equals(startingAddress, (void*) &data, sizeof(data), repetitions);
+		}
+
+
 		/**
 		* Returns the capacity of this EEPROM capacity in uint8_ts. (i.e. 32Kbit = 4096 uint8_ts)
 		*/
 		uint16_t Capacity() const ;
 
+		/**
+		* Returns the pageSize of this EEPROM.
+		*/
 		uint8_t PageSize() const ;
 
 
@@ -82,47 +110,91 @@ class AT24Cx {
 		/**
 		* Write length bytes of the 'data' array into the EEPROM.
 		*
-		* It overlaps to the begginning of the EEPROM.
+		* Data that would overflow the EEPROM's capacity is lost.
+		*
+		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, data, length),
+		* doing nothing if that's the case.
+		*
+		* Force version implies it will write regardless if the same bytes were already there.
+		*
+		* This method was not overloaded because the template version would become ambiguous:
+		*    Write(100, anArrayOfBytes, 20);
+		* The compiler cannot distinguish between
+		*    Write(uint16_t, const void* data, 20) and
+		*    Write(uint16_t, const T& data, 20), passing 20 as force argument... boolean is an uint8_t...
 		*/
 		ReturnCode Write(uint16_t startingAddress, const void* data, uint16_t length) const ;
+		ReturnCode ForceWrite(uint16_t startingAddress, const void* data, uint16_t length) const ;
 
 
 		/**
 		* Writes 'data' into the EEPROM.
+		*
+		* It truncates data that overflows the EEPROM's capacity
+		*
+		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, data, length),
+		* doing nothing if that's the case.
+		*
+		* Force version implies it will write regardless if the same bytes were already there.
+		*
+		* This method was not overloaded because the template version would become ambiguous:
+		*    Write(100, anArrayOfBytes, 20);
+		* The compiler cannot distinguish between
+		*    Write(uint16_t, const void* data, 20) and
+		*    Write(uint16_t, const T& data, 20), passing 20 as force argument... boolean is an uint8_t...
 		*/
 		template <typename T> ReturnCode Write(uint16_t startingAddress, const T& data) const {
 			return Write(startingAddress, (const void*) &data, sizeof(data));
 		}
 
-		/**
-		* Fills the EEPROM with 'byte', starting at 'startAddress' and writing 'length' bytes.
-		*/
-		ReturnCode Fill(uint8_t byte, uint16_t startingAddress, uint16_t length) const ;
+		template <typename T> ReturnCode ForceWrite(uint16_t startingAddress, const T& data) const {
+			return ForceWrite(startingAddress, (const void*) &data, sizeof(data));
+		}
+
 
 		/**
-		* Fills the EEPROM with 'byte', starting at position 0 and writing 'length' bytes.
+		* Fills the EEPROM with 'byte', starting at 'startAddress' and writing 'length' bytes.
+		*
+		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
+		* doing nothing if that's the case.
+		*
+		* Force implies it will write regardless if the same bytes were already there.
 		*/
-		ReturnCode Fill(uint8_t byte, uint16_t length) const ;
+		ReturnCode Fill(uint8_t byte, uint16_t startingAddress, uint16_t length, boolean force = false) const ;
+
 
 		/**
 		* Fills the whole EEPROM with 'byte'.
+		*
+		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
+		* doing nothing if that's the case.
+		*
+		* Force implies it will write regardless if the same bytes were already there.
 		*/
-		ReturnCode Fill(uint8_t byte) const ;
+		ReturnCode Fill(uint8_t byte, boolean force = false) const ;
+
 
 		/**
 		* Zeroes EEPROM with '0', starting at 'startAddress' and writing 'length' bytes.
+		*
+		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
+		* doing nothing if that's the case.
+		*
+		* Force implies it will write regardless if the same bytes were already there.
 		*/
-		ReturnCode Clear(uint16_t startingAddress, uint16_t length) const ;
+		ReturnCode Clear(uint16_t startingAddress, uint16_t length, boolean force = false) const ;
 
-		/**
-		* Zeroes the EEPROM, starting at position 0 and writing 'length' bytes.
-		*/
-		ReturnCode Clear(uint16_t length) const ;
 
 		/**
 		* Zeroes the whole EEPROM.
+		*
+		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
+		* doing nothing if that's the case.
+		*
+		* Force implies it will write regardless if the same bytes were already there.
 		*/
-		ReturnCode Clear() const;
+		ReturnCode Clear(boolean force = false) const;
+
 
 
 	private:
@@ -132,6 +204,13 @@ class AT24Cx {
 		uint8_t _pageSize;
 
 		static const uint8_t _MAX_POLL_ATTEMPTS = 10;
+
+		/**
+		* Returns the chunk size to test for equality in Equals.
+		* It's just a helper method to keep code cleaner ;)
+		*/
+		uint16_t _ChunkSize(uint16_t dataLength, uint16_t repetitions) const ;
+
 };
 
 #endif
