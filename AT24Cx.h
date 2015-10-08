@@ -130,7 +130,7 @@ class AT24Cx {
 		/**
 		* Writes 'data' into the EEPROM.
 		*
-		* It truncates data that overflows the EEPROM's capacity
+		* Data that would overflow the EEPROM's capacity is lost.
 		*
 		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, data, length),
 		* doing nothing if that's the case.
