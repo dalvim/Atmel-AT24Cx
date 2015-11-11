@@ -101,8 +101,10 @@ class AT24Cx {
 		* to create a string the size of the EEPROM.
 		*
 		* info is text you may want to show before showing the EEPROM's contents.
+		*
+		* if (length == 0) length = Capacity()-1;
 		*/
-		ReturnCode Print(uint16_t startingAddress, uint16_t length, const char* info = 0, uint8_t chunkSize = 0) const ;
+		ReturnCode Print(uint16_t startingAddress = 0, uint16_t length = 0, const char* info = 0, uint8_t chunkSize = 0) const ;
 
 
 		// MODIFIERS

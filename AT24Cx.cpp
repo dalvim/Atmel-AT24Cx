@@ -137,7 +137,9 @@ AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, cons
 	uint16_t currentAddress = startingAddress;
 	uint8_t _chunkSize = !chunkSize ? _pageSize : chunkSize ;
 
-	uint16_t remainingBytes = length;
+	uint16_t _length = length ? length : Capacity()-1; // "private" _length with correct value instead of length
+
+	uint16_t remainingBytes = _length;
 	uint16_t bytesToRead = min(remainingBytes, _chunkSize);
 	uint8_t data[bytesToRead];
 
