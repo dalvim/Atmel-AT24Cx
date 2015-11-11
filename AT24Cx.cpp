@@ -137,7 +137,7 @@ AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, cons
 	uint16_t currentAddress = startingAddress;
 	uint8_t _chunkSize = !chunkSize ? _pageSize : chunkSize ;
 
-	uint16_t remainingBytes = length ? length : Capacity()-1;
+	uint16_t remainingBytes = length ? length : _capacity-1;
 	uint16_t bytesToRead = min(remainingBytes, _chunkSize);
 	uint8_t data[bytesToRead];
 
@@ -188,7 +188,7 @@ AT24Cx::ReturnCode AT24Cx::ForceWrite(uint16_t startingAddress, const void* data
 	uint8_t bytesToWrite = 0;
 	ReturnCode rt = DEFAULT_VALUE;
 
-	uint16_t endingAddress = min(startingAddress + length, Capacity());
+	uint16_t endingAddress = min(startingAddress + length, _capacity);
 
 	while (currentAddress < endingAddress) {
 		Wire.beginTransmission(_deviceAddress);
