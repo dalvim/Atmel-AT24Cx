@@ -102,7 +102,7 @@ class AT24Cx {
 		*
 		* info is text you may want to show before showing the EEPROM's contents.
 		*
-		* if (length == 0) length = Capacity()-1;
+		* if (length == 0 ) will go up to Capacity
 		*/
 		ReturnCode Print(uint16_t startingAddress = 0, uint16_t length = 0, const char* info = 0, uint8_t chunkSize = 0) const ;
 
@@ -117,7 +117,7 @@ class AT24Cx {
 		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, data, length),
 		* doing nothing if that's the case.
 		*
-		* Force version implies it will write regardless if the same bytes were already there.
+		* Force version implies it will write without checking first.
 		*
 		* This method was not overloaded because the template version would become ambiguous:
 		*    Write(100, anArrayOfBytes, 20);
@@ -137,7 +137,7 @@ class AT24Cx {
 		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, data, length),
 		* doing nothing if that's the case.
 		*
-		* Force version implies it will write regardless if the same bytes were already there.
+		* Force version implies it will write without checking first.
 		*
 		* This method was not overloaded because the template version would become ambiguous:
 		*    Write(100, anArrayOfBytes, 20);
@@ -160,20 +160,9 @@ class AT24Cx {
 		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
 		* doing nothing if that's the case.
 		*
-		* Force implies it will write regardless if the same bytes were already there.
+		* Force implies it will write without checking first.
 		*/
-		ReturnCode Fill(uint8_t byte, uint16_t startingAddress, uint16_t length, boolean force = false) const ;
-
-
-		/**
-		* Fills the whole EEPROM with 'byte'.
-		*
-		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
-		* doing nothing if that's the case.
-		*
-		* Force implies it will write regardless if the same bytes were already there.
-		*/
-		ReturnCode Fill(uint8_t byte, boolean force = false) const ;
+		ReturnCode Fill(uint8_t byte, uint16_t startingAddress = 0, uint16_t length = 0, boolean force = false) const ;
 
 
 		/**
@@ -182,21 +171,11 @@ class AT24Cx {
 		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
 		* doing nothing if that's the case.
 		*
-		* Force implies it will write regardless if the same bytes were already there.
-		*/
-		ReturnCode Clear(uint16_t startingAddress, uint16_t length, boolean force = false) const ;
-
-
-		/**
-		* Zeroes the whole EEPROM.
+		* Force implies it will write without checking first.
 		*
-		* Because Writes are limited in the EEPROM, by default it first checks if Equals(startingAddress, byte, length),
-		* doing nothing if that's the case.
-		*
-		* Force implies it will write regardless if the same bytes were already there.
+		* if (length == 0 ) will go up to Capacity
 		*/
-		ReturnCode Clear(boolean force = false) const;
-
+		ReturnCode Clear(uint16_t startingAddress = 0, uint16_t length = 0, boolean force = false) const ;
 
 
 	private:

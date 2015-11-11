@@ -137,9 +137,7 @@ AT24Cx::ReturnCode AT24Cx::Print(uint16_t startingAddress, uint16_t length, cons
 	uint16_t currentAddress = startingAddress;
 	uint8_t _chunkSize = !chunkSize ? _pageSize : chunkSize ;
 
-	uint16_t _length = length ? length : Capacity()-1; // "private" _length with correct value instead of length
-
-	uint16_t remainingBytes = _length;
+	uint16_t remainingBytes = length ? length : Capacity()-1;
 	uint16_t bytesToRead = min(remainingBytes, _chunkSize);
 	uint8_t data[bytesToRead];
 
@@ -230,7 +228,8 @@ AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byteValue, uint16_t startingAddress, uin
 	AT24Cx::ReturnCode rt = DEFAULT_VALUE;
 	uint16_t currentAddress = startingAddress;
 
-	uint16_t remainingBytes = length;
+	uint16_t remainingBytes = length ? length : _capacity;
+
 	uint16_t chunkSize = min(remainingBytes, _pageSize);
 	uint8_t chunk[chunkSize] ;
 
@@ -239,7 +238,11 @@ AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byteValue, uint16_t startingAddress, uin
 	}
 
 	while (remainingBytes > 0) {
-		rt = Write(currentAddress, chunk, chunkSize);
+		if (force) {
+			rt = ForceWrite(currentAddress, chunk, chunkSize);
+		} else {
+			rt = Write(currentAddress, chunk, chunkSize);
+		}
 
 		if (rt != SUCCESS) {
 			break;
@@ -252,14 +255,9 @@ AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byteValue, uint16_t startingAddress, uin
 }
 
 
-AT24Cx::ReturnCode AT24Cx::Fill(uint8_t byte, boolean force) const {
-	return Fill(byte, _capacity, force);
-}
 
 AT24Cx::ReturnCode AT24Cx::Clear(uint16_t startingAddress, uint16_t length, boolean force) const {
-	return Fill(0, startingAddress, length, force);
-}
+	uint16_t _length = length ? length : _capacity;
 
-AT24Cx::ReturnCode AT24Cx::Clear(boolean force) const {
-	return Clear(0, _capacity, force);
+	return Fill(0, startingAddress, _length, force);
 }
